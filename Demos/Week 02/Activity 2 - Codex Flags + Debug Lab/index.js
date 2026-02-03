@@ -1,7 +1,17 @@
 function parseArgs(args) {
-  // TODO (Activity 2): implement --prompt and --debug parsing
-  // Expected shape: { prompt: string, debug: boolean }
-  return { prompt: "", debug: false };
+  let prompt = "";
+  let debug = false;
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "--prompt" && args[i + 1]) {
+      prompt = args[i + 1];
+    }
+    if (args[i] === "--debug") {
+      debug = true;
+    }
+  }
+
+  return { prompt, debug };
 }
 
 function respondToInput(input) {
@@ -13,15 +23,17 @@ function respondToInput(input) {
 }
 
 function buildRequest({ prompt }) {
-  // TODO (Activity 2): return an object shaped like an LLM request payload
-  // Example keys: model, messages, temperature
-  return { model: "demo-model", messages: [], temperature: 0.7, prompt };
+  return {
+    model: "demo-model",
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.7
+  };
 }
 
 function buildResponse({ assistantText }) {
-  // TODO (Activity 2): return an object shaped like an LLM response payload
-  // Example path students should be able to read: choices[0].message.content
-  return { choices: [{ message: { content: assistantText } }] };
+  return {
+    choices: [{ message: { content: assistantText } }]
+  };
 }
 
 function main() {
