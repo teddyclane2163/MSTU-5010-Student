@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mstu5010.example/week04/say-think-feel-do.schema.json",
+  "title": "Week04SayThinkFeelDo",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["think", "say", "feel", "do"],
+  "properties": {
+    "think": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 280,
+      "description": "A few words about intent (no step-by-step reasoning)."
+    },
+    "say": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1200,
+      "description": "What the assistant says to the user."
+    },
+    "feel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "color"],
+      "properties": {
+        "state": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "description": "One emotion label."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "description": "Hex color representing feel.state."
+        }
+      }
+    },
+    "do": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "sound"],
+      "properties": {
+        "action": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 280,
+          "description": "A visual action that complements what you say."
+        },
+        "sound": {
+          "type": "string",
+          "enum": ["happy.mp3", "sad.mp3", "neutral.mp3", "error.mp3"],
+          "description": "Pick exactly one background track."
+        }
+      }
+    }
+  }
+}
+

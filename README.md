@@ -8,6 +8,7 @@ This repository holds student-facing course materials: readings, assignment prom
 ## Start here
 - Week 01 setup guides: `Documents/Week 01 - Setup/`
 - Week 02 materials: `Documents/Week 02 - Toolchain + Payloads/`
+- Week 04 materials: `Documents/Week 04 - Output Contracts + Deterministic Wrappers/`
 
 ## Week 01 — Setup
 - `Documents/Week 01 - Setup/VSCode.md`
@@ -19,6 +20,15 @@ This repository holds student-facing course materials: readings, assignment prom
 - `Documents/Week 02 - Toolchain + Payloads/Skills Setup (VS Code + Codex + Git + LM Studio).md`
 - `Documents/Week 02 - Toolchain + Payloads/Concepts + Definitions + Inquiry (Payload Boundaries).md`
 - `Assignments/Week 02 - Challenges/README.md`
+
+## Week 04 — Output Contracts + Deterministic Wrappers
+- `Documents/Week 04 - Output Contracts + Deterministic Wrappers/README.md`
+- `Documents/Week 04 - Output Contracts + Deterministic Wrappers/JSON-Schema-Crash-Course.md`
+- `Documents/Week 04 - Output Contracts + Deterministic Wrappers/End-to-End-Interaction-Loop.md`
+- `Documents/Week 04 - Output Contracts + Deterministic Wrappers/Agent-Guide.md`
+- `Slides/Week 04 - Output Contracts + Deterministic Wrappers.md`
+- `Demos/Week 04/`
+- `Assignments/Week 04 - Boundary Decisions/README.md`
 
 ## Working expectations
 - Use pull requests for assignments or contributions (when assigned).
