@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Week 05 - Genie Mayhem Demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <style>
+      :root {
+        --bg: #0f0f14;
+        --panel: #171824;
+        --panel-2: #1f2031;
+        --ink: #f6f2ea;
+        --ink-dim: #b7b0a3;
+        --accent: #f6ad3c;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        background: radial-gradient(circle at 15% 10%, #22243a 0%, var(--bg) 45%);
+        color: var(--ink);
+      }
+
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 1rem;
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: 340px 1fr;
+      }
+
+      .panel {
+        background: linear-gradient(180deg, var(--panel), var(--panel-2));
+        border: 1px solid #2c2f46;
+        border-radius: 12px;
+        padding: 0.9rem;
+      }
+
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 1.2rem;
+      }
+
+      p {
+        margin: 0.35rem 0 0.75rem;
+        color: var(--ink-dim);
+        font-size: 0.95rem;
+      }
+
+      label {
+        display: block;
+        font-size: 0.8rem;
+        margin: 0.5rem 0 0.2rem;
+        color: var(--ink-dim);
+      }
+
+      input,
+      textarea,
+      button {
+        width: 100%;
+        border-radius: 8px;
+        border: 1px solid #3a3d58;
+        background: #12131d;
+        color: var(--ink);
+        padding: 0.6rem;
+        font: inherit;
+      }
+
+      textarea {
+        min-height: 90px;
+        resize: vertical;
+      }
+
+      button {
+        margin-top: 0.75rem;
+        background: linear-gradient(180deg, #f9c46b, var(--accent));
+        color: #161113;
+        border: 0;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      button:disabled {
+        filter: grayscale(1);
+        cursor: wait;
+      }
+
+      .secondary-btn {
+        margin-top: 0.5rem;
+        background: #1a1b28;
+        color: #d9ddf5;
+        border: 1px solid #353852;
+      }
+
+      .narrative {
+        margin-top: 0.8rem;
+        padding: 0.7rem;
+        border: 1px solid #343756;
+        border-radius: 8px;
+        background: #131422;
+        min-height: 90px;
+      }
+
+      .meta {
+        margin-top: 0.6rem;
+        font-size: 0.85rem;
+        color: var(--ink-dim);
+      }
+
+      .status-row {
+        margin-top: 0.7rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+
+      .badge {
+        display: inline-block;
+        min-width: 92px;
+        text-align: center;
+        padding: 0.25rem 0.5rem;
+        border-radius: 999px;
+        border: 1px solid #4a4d66;
+        background: #141628;
+        font-size: 0.75rem;
+        letter-spacing: 0.04em;
+      }
+
+      .meter {
+        flex: 1;
+        height: 10px;
+        border-radius: 999px;
+        background: #11121b;
+        border: 1px solid #2d3045;
+        overflow: hidden;
+      }
+
+      .meter-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #7cc6fe 0%, #f6ad3c 60%, #ef233c 100%);
+        transition: width 220ms ease;
+      }
+
+      .stage {
+        display: grid;
+        gap: 1rem;
+      }
+
+      #sketch {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #2c2f46;
+        min-height: 420px;
+      }
+
+      pre {
+        margin: 0;
+        padding: 0.75rem;
+        border-radius: 8px;
+        background: #10111a;
+        border: 1px solid #2d3048;
+        color: #cae9ff;
+        overflow: auto;
+        max-height: 220px;
+        font-size: 0.78rem;
+      }
+
+      @media (max-width: 900px) {
+        .wrap {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <section class="panel">
+        <h1>MAYHEM GENIE</h1>
+        <p>Ask for a wish. The genie grants it with consequences.</p>
+
+        <label for="model">Model Override (optional)</label>
+        <input id="model" placeholder="leave blank to use server default" />
+
+        <label for="wish">Your wish</label>
+        <textarea id="wish" placeholder="I wish I had a candy bar."></textarea>
+
+        <button id="runBtn">Grant My Wish</button>
+        <button id="resetBtn" class="secondary-btn">Reset to Order</button>
+
+        <div class="narrative" id="narrative">Your wish has been granted... pending.</div>
+        <div class="meta" id="meta">wishMagnitude: -, chaosLevel: -</div>
+        <div class="status-row">
+          <span class="badge" id="stateBadge">ORDER</span>
+          <div class="meter"><div class="meter-fill" id="chaosMeter"></div></div>
+        </div>
+      </section>
+
+      <section class="stage">
+        <div id="sketch"></div>
+        <div class="panel">
+          <label>Raw JSON</label>
+          <pre id="raw">{}</pre>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const fallbackData = {
+        wish: "",
+        wishMagnitude: 2,
+        chaosLevel: 14,
+        chaosType: ["confusion"],
+        narrative: "Your wish has been granted... and something mildly inconvenient happened.",
+        visual: {
+          palette: ["#2b2d42", "#8d99ae", "#edf2f4"],
+          shapeFamily: "orbs",
+          shapeCount: 28,
+          motionSpeed: 0.2,
+          jitter: 0.15,
+          glitchFrequency: 0.05,
+          symmetryBreak: 0.2,
+          calmPockets: 0.8
+        }
+      };
+
+      const orderState = {
+        wish: "",
+        wishMagnitude: 1,
+        chaosLevel: 0,
+        chaosType: ["confusion"],
+        narrative: "The chamber is quiet. No active wish. No active chaos.",
+        visual: {
+          palette: ["#141629", "#1a2038", "#2c3559"],
+          shapeFamily: "orbs",
+          shapeCount: 8,
+          motionSpeed: 0.02,
+          jitter: 0.01,
+          glitchFrequency: 0,
+          symmetryBreak: 0,
+          calmPockets: 1
+        }
+      };
+
+      let chaosState = structuredClone(fallbackData);
+      let targetState = structuredClone(fallbackData);
+
+      function updateUI(data) {
+        document.getElementById("narrative").textContent = data.narrative || fallbackData.narrative;
+        document.getElementById("meta").textContent =
+          `wishMagnitude: ${data.wishMagnitude ?? "-"}, chaosLevel: ${data.chaosLevel ?? "-"}`;
+        document.getElementById("raw").textContent = JSON.stringify(data, null, 2);
+        document.getElementById("chaosMeter").style.width = `${clamp(Number(data.chaosLevel || 0), 0, 100)}%`;
+        document.getElementById("stateBadge").textContent = chaosLabel(Number(data.chaosLevel || 0));
+      }
+
+      function chaosLabel(level) {
+        if (level <= 20) return "ORDER";
+        if (level <= 45) return "CALM";
+        if (level <= 75) return "CHAOS";
+        return "MAYHEM";
+      }
+
+      async function loadConfig() {
+        try {
+          const res = await fetch("/api/config");
+          if (!res.ok) return;
+          const config = await res.json();
+          if (config.defaultModel) {
+            document.getElementById("model").placeholder = config.defaultModel;
+          }
+        } catch {
+          // Keep static placeholder if config endpoint is unavailable.
+        }
+      }
+
+      function clamp(v, min, max) {
+        return Math.max(min, Math.min(max, v));
+      }
+
+      function normalize(data) {
+        const v = data.visual || {};
+        return {
+          ...fallbackData,
+          ...data,
+          wishMagnitude: clamp(Number(data.wishMagnitude ?? fallbackData.wishMagnitude), 1, 10),
+          chaosLevel: clamp(Number(data.chaosLevel ?? fallbackData.chaosLevel), 0, 100),
+          chaosType: Array.isArray(data.chaosType) ? data.chaosType.slice(0, 3) : fallbackData.chaosType,
+          narrative: typeof data.narrative === "string" ? data.narrative : fallbackData.narrative,
+          visual: {
+            ...fallbackData.visual,
+            ...v,
+            palette: Array.isArray(v.palette) && v.palette.length === 3 ? v.palette : fallbackData.visual.palette,
+            shapeCount: clamp(Number(v.shapeCount ?? fallbackData.visual.shapeCount), 8, 220),
+            motionSpeed: clamp(Number(v.motionSpeed ?? fallbackData.visual.motionSpeed), 0, 1),
+            jitter: clamp(Number(v.jitter ?? fallbackData.visual.jitter), 0, 1),
+            glitchFrequency: clamp(Number(v.glitchFrequency ?? fallbackData.visual.glitchFrequency), 0, 1),
+            symmetryBreak: clamp(Number(v.symmetryBreak ?? fallbackData.visual.symmetryBreak), 0, 1),
+            calmPockets: clamp(Number(v.calmPockets ?? fallbackData.visual.calmPockets), 0, 1)
+          }
+        };
+      }
+
+      function lerpNumber(from, to, alpha) {
+        return from + (to - from) * alpha;
+      }
+
+      function stepTowardTarget(current, target, alpha = 0.08) {
+        return {
+          ...current,
+          wish: target.wish,
+          wishMagnitude: lerpNumber(current.wishMagnitude, target.wishMagnitude, alpha),
+          chaosLevel: lerpNumber(current.chaosLevel, target.chaosLevel, alpha),
+          chaosType: target.chaosType,
+          narrative: target.narrative,
+          visual: {
+            ...current.visual,
+            palette: target.visual.palette,
+            shapeFamily: target.visual.shapeFamily,
+            shapeCount: lerpNumber(current.visual.shapeCount, target.visual.shapeCount, alpha),
+            motionSpeed: lerpNumber(current.visual.motionSpeed, target.visual.motionSpeed, alpha),
+            jitter: lerpNumber(current.visual.jitter, target.visual.jitter, alpha),
+            glitchFrequency: lerpNumber(current.visual.glitchFrequency, target.visual.glitchFrequency, alpha),
+            symmetryBreak: lerpNumber(current.visual.symmetryBreak, target.visual.symmetryBreak, alpha),
+            calmPockets: lerpNumber(current.visual.calmPockets, target.visual.calmPockets, alpha)
+          }
+        };
+      }
+
+      async function runWish() {
+        const runBtn = document.getElementById("runBtn");
+        const model = document.getElementById("model").value.trim();
+        const wish = document.getElementById("wish").value.trim();
+
+        if (!wish) return;
+
+        runBtn.disabled = true;
+        document.getElementById("narrative").textContent = "Your wish has been granted... processing cosmic paperwork.";
+
+        try {
+          const res = await fetch("/api/wish", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              wish,
+              model: model || undefined,
+              previousChaosLevel: Math.round(targetState.chaosLevel)
+            })
+          });
+
+          if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(`HTTP ${res.status}: ${errText}`);
+          }
+
+          const data = await res.json();
+          targetState = normalize(data);
+          updateUI(targetState);
+        } catch (err) {
+          const failed = {
+            ...fallbackData,
+            wish,
+            narrative: "Your wish has been granted... but the oracle returned invalid JSON.",
+            chaosLevel: 30,
+            visual: {
+              ...fallbackData.visual,
+              shapeFamily: "runes",
+              glitchFrequency: 0.5,
+              jitter: 0.5
+            }
+          };
+          targetState = normalize(failed);
+          updateUI(targetState);
+          console.error(err);
+        } finally {
+          runBtn.disabled = false;
+        }
+      }
+
+      document.getElementById("runBtn").addEventListener("click", runWish);
+      document.getElementById("resetBtn").addEventListener("click", () => {
+        targetState = structuredClone(orderState);
+        document.getElementById("wish").value = "";
+        updateUI(targetState);
+      });
+
+      let t = 0;
+      new p5((p) => {
+        p.setup = () => {
+          const w = document.getElementById("sketch").clientWidth;
+          const c = p.createCanvas(w, 460);
+          c.parent("sketch");
+          p.noStroke();
+          updateUI(chaosState);
+        };
+
+        p.windowResized = () => {
+          const w = document.getElementById("sketch").clientWidth;
+          p.resizeCanvas(w, 460);
+        };
+
+        function drawOrb(x, y, r) {
+          p.circle(x, y, r);
+        }
+
+        function drawShard(x, y, r, a) {
+          p.push();
+          p.translate(x, y);
+          p.rotate(a);
+          p.triangle(-r * 0.7, r * 0.5, 0, -r, r * 0.9, r * 0.45);
+          p.pop();
+        }
+
+        function drawRune(x, y, r, a) {
+          p.push();
+          p.translate(x, y);
+          p.rotate(a);
+          p.rectMode(p.CENTER);
+          p.rect(0, 0, r * 1.1, r * 0.35);
+          p.rect(0, 0, r * 0.35, r * 1.1);
+          p.pop();
+        }
+
+        function drawEye(x, y, r, a) {
+          p.push();
+          p.translate(x, y);
+          p.rotate(a);
+          p.ellipse(0, 0, r * 1.5, r * 0.8);
+          p.fill(0, 0, 0, 170);
+          p.circle(0, 0, r * 0.35);
+          p.pop();
+        }
+
+        p.draw = () => {
+          chaosState = stepTowardTarget(chaosState, targetState, 0.08);
+          t += 0.01 + chaosState.visual.motionSpeed * 0.05;
+
+          const pal = chaosState.visual.palette;
+          const c0 = p.color(pal[0]);
+          const c1 = p.color(pal[1]);
+          const c2 = p.color(pal[2]);
+
+          for (let y = 0; y < p.height; y += 8) {
+            const n = y / p.height;
+            const c = p.lerpColor(c0, c1, n);
+            p.stroke(c);
+            p.line(0, y, p.width, y);
+          }
+          p.noStroke();
+
+          const chaosNorm = clamp(chaosState.chaosLevel / 100, 0, 1);
+          const density = Math.floor(chaosState.visual.shapeCount);
+          const drawProbability = 0.08 + chaosNorm * 0.92;
+          const amp = 2 + chaosState.chaosLevel * 0.14;
+          const jitter = chaosState.visual.jitter * 22;
+          const breakBias = chaosState.visual.symmetryBreak;
+          const calm = chaosState.visual.calmPockets;
+
+          for (let i = 0; i < density; i++) {
+            if (p.random() > drawProbability) continue;
+            const n = i / Math.max(1, density - 1);
+            let x = p.map(i % 20, 0, 19, 40, p.width - 40);
+            let y = p.map(Math.floor(i / 20), 0, Math.ceil(density / 20), 35, p.height - 35);
+
+            const nx = (p.noise(n * 3 + t) - 0.5) * amp * 14;
+            const ny = (p.noise(100 + n * 2.7 + t) - 0.5) * amp * 14;
+
+            x += nx + p.random(-jitter, jitter);
+            y += ny + p.random(-jitter, jitter);
+
+            if (p.random() < breakBias * 0.4) {
+              x = p.random(0, p.width);
+              y = p.random(0, p.height);
+            }
+
+            const r = p.map(chaosState.chaosLevel, 0, 100, 6, 24) * (0.6 + p.random(0.8));
+            const a = t * 2 + n * p.TWO_PI;
+
+            const shade = p.lerpColor(c1, c2, p.random());
+            const alpha = p.map(calm, 0, 1, 220, 110);
+            p.fill(p.red(shade), p.green(shade), p.blue(shade), alpha);
+
+            switch (chaosState.visual.shapeFamily) {
+              case "shards":
+                drawShard(x, y, r, a);
+                break;
+              case "runes":
+                drawRune(x, y, r, a);
+                break;
+              case "waves":
+                p.rect(x, y, r * 1.5, r * 0.2 + p.sin(a) * 2, 2);
+                break;
+              case "eyes":
+                drawEye(x, y, r, a);
+                break;
+              default:
+                drawOrb(x, y, r);
+                break;
+            }
+          }
+
+          if (p.random() < chaosState.visual.glitchFrequency * 0.25) {
+            p.fill(255, 245, 220, 24 + chaosState.chaosLevel * 0.6);
+            for (let i = 0; i < 6; i++) {
+              const gy = p.random(0, p.height);
+              p.rect(0, gy, p.width, p.random(2, 9));
+            }
+          }
+        };
+      });
+
+      loadConfig();
+
+    </script>
+  </body>
+</html>

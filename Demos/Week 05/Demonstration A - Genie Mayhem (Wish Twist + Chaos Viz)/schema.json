@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mstu5010.example/week05/genie-mayhem.schema.json",
+  "title": "Week05GenieMayhem",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "wish",
+    "wishMagnitude",
+    "chaosLevel",
+    "chaosType",
+    "narrative",
+    "visual"
+  ],
+  "properties": {
+    "wish": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240
+    },
+    "wishMagnitude": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "chaosLevel": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "chaosType": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "irony",
+          "greed",
+          "confusion",
+          "miscommunication",
+          "reputation-collapse",
+          "social-chaos",
+          "bureaucratic-nightmare",
+          "tech-glitch",
+          "scarcity",
+          "time-slip"
+        ]
+      }
+    },
+    "narrative": {
+      "type": "string",
+      "minLength": 24,
+      "maxLength": 800
+    },
+    "visual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "palette",
+        "shapeFamily",
+        "shapeCount",
+        "motionSpeed",
+        "jitter",
+        "glitchFrequency",
+        "symmetryBreak",
+        "calmPockets"
+      ],
+      "properties": {
+        "palette": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          }
+        },
+        "shapeFamily": {
+          "type": "string",
+          "enum": ["orbs", "shards", "runes", "waves", "eyes"]
+        },
+        "shapeCount": {
+          "type": "integer",
+          "minimum": 8,
+          "maximum": 220
+        },
+        "motionSpeed": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "jitter": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "glitchFrequency": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "symmetryBreak": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "calmPockets": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    }
+  }
+}

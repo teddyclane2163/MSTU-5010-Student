@@ -1,0 +1,9 @@
+{
+  "name": "week05-genie-mayhem-demo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Week 05 teacher demo: Genie Mayhem wish twist + chaos visualization",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
