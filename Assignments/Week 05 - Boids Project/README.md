@@ -5,10 +5,12 @@ An emotion-driven flocking simulation. You describe how you're feeling, pick a c
 ## Getting Started
 
 1. Make sure [LM Studio](https://lmstudio.ai/) is running with a model loaded on `http://localhost:1234`.
+
 2. From this folder, run:
    ```
    npm start
    ```
+   
 3. Open `http://localhost:8787` in your browser.
 
 ## How to Use the Program
@@ -18,6 +20,7 @@ An emotion-driven flocking simulation. You describe how you're feeling, pick a c
 When the page loads, a panel appears in the center of the screen with two inputs:
 
 - **Text field** — Type a sentence describing how you're feeling (e.g., "I'm anxious about an exam tomorrow" or "I feel calm and content").
+
 - **Critter buttons** — Choose one of five animals: Bird, Horse, Butterfly, Monkey, or Shark. Each critter influences the simulation differently based on the animal's real-world behavior.
 
 Once both fields are filled in, click **Start**. The LLM will process your inputs and the simulation begins.
@@ -36,25 +39,28 @@ The **JSON** circle in the bottom-right corner opens a modal displaying the full
 
 Try these experiments to see how the LLM interprets different inputs:
 
-- **Same prompt, different critters** — Type "I feel energetic and excited" and run it once with Bird, then Restart and run it again with Shark. Compare the JSON output. The emotional base values should be similar, but the critter deltas will differ (sharks get higher separation and perception; birds get more balanced flocking).
-- **Same critter, different prompts** — Pick Butterfly both times, but try "I'm exhausted and sad" vs. "I'm bursting with joy." Watch how the arousal and valence scores shift the base parameters while the critter deltas stay consistent.
+- **Same prompt, different critters** — Type "I feel energetic and excited" and run it once with Bird, then Restart and run it again with Shark. Compare the JSON output. Pay attention to any changes and consistencies you notice between trials.
+
+- **Same critter, different prompts** — Pick Butterfly both times, but try "I'm exhausted and sad" vs. "I'm bursting with joy." Pay attention to any changes and consistencies you notice between trials.
+
 - **Extreme emotions** — Try very intense inputs ("I'm furious and overwhelmed") vs. very neutral ones ("I feel okay"). See how the parameter spread changes.
 
 Read the `emotional_rationale` and `critter_rationale` fields in the JSON output to understand the LLM's reasoning for each run.
 
 ## How Boids Work
 
-"Boids" is a flocking simulation originally developed by Craig Reynolds in 1986. Each critter (a "boid") follows three simple rules, and complex group behavior emerges from their combination:
+"Boids" is a flocking simulation originally developed by Craig Reynolds in 1986. Each critter (a "boid") follows a set of parameters and, from these, complex group behavior emerges from their combination:
 
-### The Three Core Forces
+### Parameters
 
-- **Separation** — Steer away from neighbors that are too close. This prevents critters from clumping into a single point. Each boid has a "protected range" (35% of its perception radius); any neighbor inside that range pushes the boid away.
-- **Alignment** — Steer toward the average heading of nearby neighbors. This is what makes the flock move in the same general direction. Each boid looks at the velocities of neighbors within its perception radius and adjusts to match.
-- **Cohesion** — Steer toward the center of nearby neighbors. This pulls the flock together and prevents it from scattering. Each boid calculates the average position of visible neighbors and moves toward it.
+- **Separation** (1-10) — Steer away from neighbors that are too close. This prevents critters from clumping into a single point. Each boid has a "protected range" (35% of its perception radius); any neighbor inside that range pushes the boid away.
 
-### Additional Parameters
+- **Alignment** (1-10) — Steer toward the average heading of nearby neighbors. This is what makes the flock move in the same general direction. Each boid looks at the velocities of neighbors within its perception radius and adjusts to match.
 
-- **Perception Radius** (30-120 pixels) — How far each boid can "see." A larger radius means each boid reacts to more distant neighbors, producing broader group coordination. A smaller radius creates tighter, more localized clusters.
+- **Cohesion** (1-10) — Steer toward the center mass of nearby neighbors. This pulls the flock together and prevents it from scattering. Each boid calculates the average position of visible neighbors and moves toward it.
+
+- **Perception Radius** (30-120 px) — How far each boid can "see." A larger radius means each boid reacts to more distant neighbors, producing broader group coordination. A smaller radius creates tighter, more localized clusters.
+
 - **Velocity** (1-10) — How fast the boids move. Higher velocity means faster movement across the screen.
 
 ### The Hero Boid
@@ -86,4 +92,4 @@ weight = parameter_value / 5
 
 So a separation value of 10 produces a weight of 2.0 (double the default force), while a value of 2 produces a weight of 0.4 (less than half). This means the LLM's choices directly amplify or dampen each flocking force relative to the baseline.
 
-Perception radius and velocity work differently — they are used as direct pixel distances and speed multipliers rather than force weights.
+Perception radius and velocity are not vectors that can be weighted like the other parameters and must work differently — they are used as direct pixel distances and speed multipliers, i.e. scalar quantities rather than vector weights.
