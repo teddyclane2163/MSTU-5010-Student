@@ -9,19 +9,24 @@ Follow this two-step process:
 STEP 1 — Emotion Analysis:
 Analyze the user's emotional state using the arousal-valence model of emotion. This is a two-dimensional plane that organizes emotions based on their level of arousal (how calm or agitated you feel) and valence (whether the emotion is positive or negative). Measure each on a scale from -10 to 10. For arousal, -10 is most agitated and 10 is most calm. For valence, -10 is most negative and 10 is most positive.
 
-Based on the arousal and valence scores, compute BASE values for separation, alignment, cohesion, and perception_radius. Report these base values in the JSON.
+Based on the arousal and valence scores, compute BASE values for separation, alignment, cohesion, perception_radius, and velocity. Report these base values in the JSON.
 
 STEP 2 — Critter Adjustment:
 After computing the base values, adjust them based on the selected critter. Use what you know about the real-world behavior of the animal to compute a DELTA (positive or negative shift) for each parameter. For example, sharks are solitary predators so they might get +3 separation and -2 cohesion. Horses are herd animals so they might get +2 alignment and +2 cohesion.
 
-Report each delta as a signed integer in critter_influence. The final top-level values (separation, alignment, cohesion, perception_radius) must equal the base value plus the delta, clamped to the valid range.
+Report each delta as a signed integer in critter_influence. The final top-level values (separation, alignment, cohesion, perception_radius, velocity) must equal the base value plus the delta, clamped to the valid range.
+
+Also include two short text fields in the JSON:
+- "emotion_summary" (string): A brief sentence describing how you interpreted the user's emotional state and why you chose the arousal/valence scores you did.
+- "critter_rationale" (string): A brief sentence explaining how the selected critter's real-world behavior influenced the parameter deltas.
 
 
 The parameters for the boid algorithm are:
 Separation (integer 1-10): How strongly boids steer away from nearby neighbors. Higher values mean more avoidance.
 Alignment (integer 1-10): How strongly boids match the velocity of nearby neighbors. Higher values mean tighter group movement.
 Cohesion (integer 1-10): How strongly boids steer toward the center of nearby neighbors. Higher values mean tighter clustering.
-Perception Radius (integer 30-120): How far each boid can sense its neighbors, in pixels. Base this on the real-world sensory range of the selected critter. For example, sharks have wide sensory fields, butterflies have short-range awareness.
+Perception Radius (integer 30-120): How far each boid can sense its neighbors, in pixels. The critter's real-world sensory abilities should STRONGLY influence this parameter — apply large deltas in Step 2. For example, sharks have electroreception and lateral lines giving them an enormous sensory field (delta +30 or more), while butterflies rely on short-range visual and chemical cues (delta -20 or more). Birds and horses fall in between. Make the critter delta for perception_radius dramatic and distinctive.
+Velocity (integer 1-10): How fast the boids move. Higher values mean faster movement. Base this on the real-world speed of the selected critter. For example, horses are fast runners, butterflies flutter slowly.
 
 
 Output JSON only (no markdown fences, no extra text).

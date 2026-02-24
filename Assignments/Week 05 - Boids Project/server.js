@@ -27,19 +27,23 @@ const OUTPUT_SCHEMA = {
     alignment: { type: "integer" },
     cohesion: { type: "integer" },
     perception_radius: { type: "integer" },
+    velocity: { type: "integer" },
+    emotion_summary: { type: "string" },
+    critter_rationale: { type: "string" },
     critter_influence: {
       type: "object",
       properties: {
         separation: { type: "integer" },
         alignment: { type: "integer" },
         cohesion: { type: "integer" },
-        perception_radius: { type: "integer" }
+        perception_radius: { type: "integer" },
+        velocity: { type: "integer" }
       },
-      required: ["separation", "alignment", "cohesion", "perception_radius"],
+      required: ["separation", "alignment", "cohesion", "perception_radius", "velocity"],
       additionalProperties: false
     }
   },
-  required: ["arousal", "valence", "separation", "alignment", "cohesion", "perception_radius", "critter_influence"],
+  required: ["arousal", "valence", "separation", "alignment", "cohesion", "perception_radius", "velocity", "emotion_summary", "critter_rationale", "critter_influence"],
   additionalProperties: false
 };
 
@@ -50,7 +54,10 @@ const FALLBACK_RESPONSE = {
   alignment: 5,
   cohesion: 5,
   perception_radius: 60,
-  critter_influence: { separation: 0, alignment: 0, cohesion: 0, perception_radius: 0 }
+  velocity: 5,
+  emotion_summary: "Neutral baseline.",
+  critter_rationale: "No critter adjustment applied.",
+  critter_influence: { separation: 0, alignment: 0, cohesion: 0, perception_radius: 0, velocity: 0 }
 };
 
 let systemPrompt = "You are an emotionally intelligent listener. Return JSON only.";
@@ -113,7 +120,7 @@ function clamp(value, min, max) {
 function validateResponse(data) {
   if (!data || typeof data !== "object") return false;
 
-  const topFields = ["arousal", "valence", "separation", "alignment", "cohesion", "perception_radius"];
+  const topFields = ["arousal", "valence", "separation", "alignment", "cohesion", "perception_radius", "velocity"];
   for (const field of topFields) {
     if (typeof data[field] !== "number" || !Number.isFinite(data[field])) return false;
   }
@@ -124,9 +131,12 @@ function validateResponse(data) {
   if (data.alignment < 1 || data.alignment > 10) return false;
   if (data.cohesion < 1 || data.cohesion > 10) return false;
   if (data.perception_radius < 30 || data.perception_radius > 120) return false;
+  if (data.velocity < 1 || data.velocity > 10) return false;
+  if (typeof data.emotion_summary !== "string") return false;
+  if (typeof data.critter_rationale !== "string") return false;
 
   if (!data.critter_influence || typeof data.critter_influence !== "object") return false;
-  for (const field of ["separation", "alignment", "cohesion", "perception_radius"]) {
+  for (const field of ["separation", "alignment", "cohesion", "perception_radius", "velocity"]) {
     if (typeof data.critter_influence[field] !== "number" || !Number.isFinite(data.critter_influence[field])) return false;
   }
 
@@ -143,11 +153,15 @@ function coerceResponse(data) {
       alignment: clamp(Math.round(Number(data.alignment)), 1, 10),
       cohesion: clamp(Math.round(Number(data.cohesion)), 1, 10),
       perception_radius: clamp(Math.round(Number(data.perception_radius)), 30, 120),
+      velocity: clamp(Math.round(Number(data.velocity)), 1, 10),
+      emotion_summary: String(data.emotion_summary ?? ""),
+      critter_rationale: String(data.critter_rationale ?? ""),
       critter_influence: {
         separation: Math.round(Number(data.critter_influence?.separation ?? 0)),
         alignment: Math.round(Number(data.critter_influence?.alignment ?? 0)),
         cohesion: Math.round(Number(data.critter_influence?.cohesion ?? 0)),
-        perception_radius: Math.round(Number(data.critter_influence?.perception_radius ?? 0))
+        perception_radius: Math.round(Number(data.critter_influence?.perception_radius ?? 0)),
+        velocity: Math.round(Number(data.critter_influence?.velocity ?? 0))
       }
     };
     if (Object.values(coerced).some((v) => typeof v === "number" && !Number.isFinite(v))) return null;

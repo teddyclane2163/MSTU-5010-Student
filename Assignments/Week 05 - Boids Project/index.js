@@ -1,8 +1,11 @@
 /* ── Constants ─────────────────────────────────────────────── */
 const BOID_COUNT = 100;
 const DEFAULT_PERCEPTION = 60;
-const MAX_SPEED = 3;
+const DEFAULT_VELOCITY = 5;
+const BASE_SPEED = 0.6;
 const MAX_FORCE = 0.15;
+const TURN_FACTOR = 0.2;
+const EDGE_MARGIN = 80;
 const EMOJI_SIZE = 30;
 
 const CRITTER_MAP = {
@@ -16,7 +19,7 @@ const CRITTER_MAP = {
 /* ── State ─────────────────────────────────────────────────── */
 let boids = [];
 let heroIndex = 0;
-let params = { separation: 5, alignment: 5, cohesion: 5, perception: DEFAULT_PERCEPTION };
+let params = { separation: 5, alignment: 5, cohesion: 5, perception: DEFAULT_PERCEPTION, velocity: DEFAULT_VELOCITY };
 let currentEmoji = CRITTER_MAP.bird;
 let selectedCritter = null;
 let lastResponse = null;
@@ -59,29 +62,18 @@ function setMag(vx, vy, mag) {
 
 /* ── Boid forces ───────────────────────────────────────────── */
 function separation(boid, flock, weight) {
-  let sx = 0, sy = 0, count = 0;
-  const sepDist = params.perception * 0.5;
+  let closeDx = 0, closeDy = 0;
+  const protectedRange = params.perception * 0.35;
   for (const other of flock) {
     if (other === boid) continue;
     const d = dist(boid.x, boid.y, other.x, other.y);
-    if (d > 0 && d < sepDist) {
-      let dx = boid.x - other.x;
-      let dy = boid.y - other.y;
-      dx /= d * d;
-      dy /= d * d;
-      sx += dx;
-      sy += dy;
-      count++;
+    if (d > 0 && d < protectedRange) {
+      closeDx += boid.x - other.x;
+      closeDy += boid.y - other.y;
     }
   }
-  if (count === 0) return [0, 0];
-  sx /= count;
-  sy /= count;
-  [sx, sy] = setMag(sx, sy, MAX_SPEED);
-  sx -= boid.vx;
-  sy -= boid.vy;
-  [sx, sy] = limit(sx, sy, MAX_FORCE);
-  return [sx * weight, sy * weight];
+  const avoidFactor = 0.05 * weight;
+  return [closeDx * avoidFactor, closeDy * avoidFactor];
 }
 
 function alignment(boid, flock, weight) {
@@ -98,7 +90,8 @@ function alignment(boid, flock, weight) {
   if (count === 0) return [0, 0];
   ax /= count;
   ay /= count;
-  [ax, ay] = setMag(ax, ay, MAX_SPEED);
+  const maxSpd = params.velocity * BASE_SPEED;
+  [ax, ay] = setMag(ax, ay, maxSpd);
   ax -= boid.vx;
   ay -= boid.vy;
   [ax, ay] = limit(ax, ay, MAX_FORCE);
@@ -119,7 +112,8 @@ function cohesion(boid, flock, weight) {
   if (count === 0) return [0, 0];
   cx = cx / count - boid.x;
   cy = cy / count - boid.y;
-  [cx, cy] = setMag(cx, cy, MAX_SPEED);
+  const maxSpd = params.velocity * BASE_SPEED;
+  [cx, cy] = setMag(cx, cy, maxSpd);
   cx -= boid.vx;
   cy -= boid.vy;
   [cx, cy] = limit(cx, cy, MAX_FORCE);
@@ -138,16 +132,40 @@ function updateBoid(boid, flock, p, w, h) {
   boid.vx += sepX + aliX + cohX;
   boid.vy += sepY + aliY + cohY;
 
-  [boid.vx, boid.vy] = limit(boid.vx, boid.vy, MAX_SPEED);
+  // Turn at edges — stronger push the closer to the edge
+  if (boid.x < EDGE_MARGIN) {
+    boid.vx += TURN_FACTOR * (1 + (EDGE_MARGIN - boid.x) / EDGE_MARGIN);
+  }
+  if (boid.x > w - EDGE_MARGIN) {
+    boid.vx -= TURN_FACTOR * (1 + (boid.x - (w - EDGE_MARGIN)) / EDGE_MARGIN);
+  }
+  if (boid.y < EDGE_MARGIN) {
+    boid.vy += TURN_FACTOR * (1 + (EDGE_MARGIN - boid.y) / EDGE_MARGIN);
+  }
+  if (boid.y > h - EDGE_MARGIN) {
+    boid.vy -= TURN_FACTOR * (1 + (boid.y - (h - EDGE_MARGIN)) / EDGE_MARGIN);
+  }
+
+  // Enforce speed limits
+  const maxSpd = params.velocity * BASE_SPEED;
+  const minSpd = maxSpd * 0.33;
+  const speed = Math.sqrt(boid.vx * boid.vx + boid.vy * boid.vy);
+  if (speed > maxSpd) {
+    boid.vx = (boid.vx / speed) * maxSpd;
+    boid.vy = (boid.vy / speed) * maxSpd;
+  } else if (speed < minSpd && speed > 0) {
+    boid.vx = (boid.vx / speed) * minSpd;
+    boid.vy = (boid.vy / speed) * minSpd;
+  }
 
   boid.x += boid.vx;
   boid.y += boid.vy;
 
-  // Wrap edges
-  if (boid.x > w) boid.x -= w;
-  if (boid.x < 0) boid.x += w;
-  if (boid.y > h) boid.y -= h;
-  if (boid.y < 0) boid.y += h;
+  // Hard clamp — never leave canvas
+  if (boid.x < 0) { boid.x = 0; boid.vx = Math.abs(boid.vx); }
+  if (boid.x > w) { boid.x = w; boid.vx = -Math.abs(boid.vx); }
+  if (boid.y < 0) { boid.y = 0; boid.vy = Math.abs(boid.vy); }
+  if (boid.y > h) { boid.y = h; boid.vy = -Math.abs(boid.vy); }
 }
 
 /* ── UI logic ──────────────────────────────────────────────── */
@@ -165,6 +183,26 @@ function initUI() {
   const jsonModal = document.getElementById("json-modal");
   const modalCloseBtn = document.getElementById("modal-close-btn");
   const critterBtns = document.querySelectorAll(".critter-btn");
+  const uiPanel = document.getElementById("ui-panel");
+  const inputBtn = document.getElementById("input-btn");
+  const minimizeBtn = document.getElementById("minimize-btn");
+
+  function minimizePanel() {
+    uiPanel.classList.add("minimized");
+    inputBtn.style.display = "block";
+  }
+
+  function restorePanel() {
+    uiPanel.classList.remove("minimized");
+    inputBtn.style.display = "none";
+  }
+
+  minimizeBtn.addEventListener("click", minimizePanel);
+
+  inputBtn.addEventListener("click", () => {
+    restorePanel();
+    jsonModal.classList.remove("visible");
+  });
 
   feelingInput.addEventListener("input", updateStartButton);
 
@@ -202,6 +240,7 @@ function initUI() {
       params.alignment = data.alignment ?? 5;
       params.cohesion = data.cohesion ?? 5;
       params.perception = data.perception_radius ?? DEFAULT_PERCEPTION;
+      params.velocity = data.velocity ?? DEFAULT_VELOCITY;
 
       hasStarted = true;
       feelingInput.value = "";
@@ -216,7 +255,9 @@ function initUI() {
       document.getElementById("param-ali").textContent = params.alignment;
       document.getElementById("param-coh").textContent = params.cohesion;
       document.getElementById("param-per").textContent = params.perception;
+      document.getElementById("param-vel").textContent = params.velocity;
       document.getElementById("param-overlay").classList.add("visible");
+      minimizePanel();
     } catch (err) {
       console.error("Request failed:", err);
       startBtn.textContent = "Start";
@@ -228,7 +269,7 @@ function initUI() {
   });
 
   restartBtn.addEventListener("click", () => {
-    params = { separation: 5, alignment: 5, cohesion: 5, perception: DEFAULT_PERCEPTION };
+    params = { separation: 5, alignment: 5, cohesion: 5, perception: DEFAULT_PERCEPTION, velocity: DEFAULT_VELOCITY };
     selectedCritter = null;
     currentEmoji = CRITTER_MAP.bird;
     lastResponse = null;
@@ -245,6 +286,8 @@ function initUI() {
     jsonBtn.disabled = true;
     document.getElementById("param-overlay").classList.remove("visible");
 
+    restorePanel();
+
     // Re-pick a hero boid
     heroIndex = Math.floor(Math.random() * boids.length);
   });
@@ -257,6 +300,7 @@ function initUI() {
       retries === 0
         ? "LLM returned compliant JSON on the first attempt."
         : `LLM required ${retries} retry${retries > 1 ? "es" : ""} before returning compliant JSON.`;
+    minimizePanel();
     jsonModal.classList.add("visible");
   });
 

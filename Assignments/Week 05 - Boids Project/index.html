@@ -42,8 +42,9 @@
 
       #ui-panel {
         position: fixed;
-        bottom: 24px;
-        left: 24px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         z-index: 10;
         background: var(--panel-bg);
         border: 1px solid var(--panel-border);
@@ -51,6 +52,55 @@
         padding: 16px 18px;
         width: 320px;
         backdrop-filter: blur(8px);
+        transition: opacity 0.15s;
+      }
+      #ui-panel.minimized {
+        display: none;
+      }
+
+      .minimize-btn {
+        position: absolute;
+        top: 8px;
+        right: 10px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 1px solid var(--panel-border);
+        background: rgba(40, 50, 65, 0.8);
+        color: var(--ink-dim);
+        font-size: 0.85rem;
+        line-height: 1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.15s;
+      }
+      .minimize-btn:hover {
+        background: var(--btn-bg);
+        color: var(--ink);
+      }
+
+      #input-btn {
+        position: fixed;
+        bottom: 24px;
+        left: 24px;
+        z-index: 10;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 1px solid var(--panel-border);
+        background: var(--panel-bg);
+        color: var(--accent);
+        font-size: 0.6rem;
+        font-weight: 700;
+        cursor: pointer;
+        backdrop-filter: blur(8px);
+        transition: background 0.15s;
+        display: none;
+      }
+      #input-btn:hover {
+        background: var(--btn-bg);
       }
 
       #ui-panel .prompt-label {
@@ -297,6 +347,7 @@
     <div id="sketch"></div>
 
     <div id="ui-panel">
+      <button class="minimize-btn" id="minimize-btn" title="Minimize">&minus;</button>
       <div class="prompt-label">How are you feeling today? Tell me in a sentence.</div>
       <input type="text" id="feeling-input" placeholder="" />
       <div class="critter-label">Choose a critter:</div>
@@ -330,10 +381,15 @@
       </div>
       <div class="param-row" style="position:relative;">
         <span class="param-label">Perception</span>: <span id="param-per">60</span>
-        <div class="tooltip">How far each boid can sense its neighbors (in pixels). Based on the real-world sensory range of the selected critter.</div>
+        <div class="tooltip">How far each boid can sense its neighbors (in pixels). Higher values mean boids can see further and react to more distant neighbors.</div>
+      </div>
+      <div class="param-row" style="position:relative;">
+        <span class="param-label">Velocity</span>: <span id="param-vel">5</span>
+        <div class="tooltip">How fast the boids move. Higher values mean faster movement.</div>
       </div>
     </div>
 
+    <button id="input-btn">Input</button>
     <button id="json-btn" disabled>JSON</button>
 
     <div id="json-modal">
