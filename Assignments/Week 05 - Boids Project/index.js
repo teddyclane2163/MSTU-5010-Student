@@ -1,8 +1,8 @@
 /* ── Constants ─────────────────────────────────────────────── */
-const BOID_COUNT = 100;
+const BOID_COUNT = 300;
 const DEFAULT_PERCEPTION = 60;
 const DEFAULT_VELOCITY = 5;
-const BASE_SPEED = 0.6;
+const BASE_SPEED = 0.8;
 const MAX_FORCE = 0.15;
 const TURN_FACTOR = 0.2;
 const EDGE_MARGIN = 80;

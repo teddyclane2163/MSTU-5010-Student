@@ -28,7 +28,7 @@ const OUTPUT_SCHEMA = {
     cohesion: { type: "integer" },
     perception_radius: { type: "integer" },
     velocity: { type: "integer" },
-    emotion_summary: { type: "string" },
+    emotional_rationale: { type: "string" },
     critter_rationale: { type: "string" },
     critter_influence: {
       type: "object",
@@ -43,7 +43,7 @@ const OUTPUT_SCHEMA = {
       additionalProperties: false
     }
   },
-  required: ["arousal", "valence", "separation", "alignment", "cohesion", "perception_radius", "velocity", "emotion_summary", "critter_rationale", "critter_influence"],
+  required: ["arousal", "valence", "separation", "alignment", "cohesion", "perception_radius", "velocity", "emotional_rationale", "critter_rationale", "critter_influence"],
   additionalProperties: false
 };
 
@@ -55,7 +55,7 @@ const FALLBACK_RESPONSE = {
   cohesion: 5,
   perception_radius: 60,
   velocity: 5,
-  emotion_summary: "Neutral baseline.",
+  emotional_rationale: "Neutral baseline.",
   critter_rationale: "No critter adjustment applied.",
   critter_influence: { separation: 0, alignment: 0, cohesion: 0, perception_radius: 0, velocity: 0 }
 };
@@ -132,7 +132,7 @@ function validateResponse(data) {
   if (data.cohesion < 1 || data.cohesion > 10) return false;
   if (data.perception_radius < 30 || data.perception_radius > 120) return false;
   if (data.velocity < 1 || data.velocity > 10) return false;
-  if (typeof data.emotion_summary !== "string") return false;
+  if (typeof data.emotional_rationale !== "string") return false;
   if (typeof data.critter_rationale !== "string") return false;
 
   if (!data.critter_influence || typeof data.critter_influence !== "object") return false;
@@ -154,7 +154,7 @@ function coerceResponse(data) {
       cohesion: clamp(Math.round(Number(data.cohesion)), 1, 10),
       perception_radius: clamp(Math.round(Number(data.perception_radius)), 30, 120),
       velocity: clamp(Math.round(Number(data.velocity)), 1, 10),
-      emotion_summary: String(data.emotion_summary ?? ""),
+      emotional_rationale: String(data.emotional_rationale ?? ""),
       critter_rationale: String(data.critter_rationale ?? ""),
       critter_influence: {
         separation: Math.round(Number(data.critter_influence?.separation ?? 0)),
