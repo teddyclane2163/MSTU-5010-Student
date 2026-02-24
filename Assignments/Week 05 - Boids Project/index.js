@@ -3,7 +3,7 @@ const BOID_COUNT = 100;
 const DEFAULT_PERCEPTION = 60;
 const MAX_SPEED = 3;
 const MAX_FORCE = 0.15;
-const EMOJI_SIZE = 18;
+const EMOJI_SIZE = 30;
 
 const CRITTER_MAP = {
   bird: "\u{1F426}",
