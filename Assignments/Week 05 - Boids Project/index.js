@@ -1,5 +1,5 @@
 /* ── Constants ─────────────────────────────────────────────── */
-const BOID_COUNT = 300;
+const BOID_COUNT = 750;
 const DEFAULT_PERCEPTION = 60;
 const DEFAULT_VELOCITY = 5;
 const BASE_SPEED = 0.8;
