@@ -1,0 +1,9 @@
+{
+  "name": "week05-boids-project",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Week 05 Mini-Project: Emotion-driven boid flocking via LLM boundary loop",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

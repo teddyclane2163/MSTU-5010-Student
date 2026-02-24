@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Week 05 - Boids Project</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.2/p5.min.js"></script>
+    <style>
+      :root {
+        --bg: #2b3a42;
+        --panel-bg: rgba(30, 40, 52, 0.92);
+        --panel-border: rgba(71, 95, 115, 0.45);
+        --ink: #e2e8f0;
+        --ink-dim: #94a3b8;
+        --accent: #7c8dba;
+        --btn-bg: #4a5580;
+        --btn-active: #6b7db8;
+        --btn-selected: #8b9fd4;
+        --start-bg: #5a6a9a;
+        --start-active: #7888b8;
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        overflow: hidden;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      #sketch {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+      }
+
+      #ui-panel {
+        position: fixed;
+        bottom: 24px;
+        left: 24px;
+        z-index: 10;
+        background: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 12px;
+        padding: 16px 18px;
+        width: 320px;
+        backdrop-filter: blur(8px);
+      }
+
+      #ui-panel .prompt-label {
+        font-size: 0.82rem;
+        color: var(--ink-dim);
+        margin-bottom: 8px;
+      }
+
+      #feeling-input {
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid var(--panel-border);
+        background: rgba(15, 22, 35, 0.7);
+        color: var(--ink);
+        font: inherit;
+        font-size: 0.88rem;
+        outline: none;
+        margin-bottom: 12px;
+      }
+      #feeling-input:focus {
+        border-color: var(--accent);
+      }
+
+      .critter-label {
+        font-size: 0.78rem;
+        color: var(--ink-dim);
+        margin-bottom: 6px;
+      }
+
+      .critter-row {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+
+      .critter-btn {
+        flex: 1;
+        padding: 6px 0;
+        border-radius: 8px;
+        border: 1px solid var(--panel-border);
+        background: rgba(30, 40, 55, 0.8);
+        cursor: pointer;
+        font-size: 1.3rem;
+        text-align: center;
+        transition: background 0.15s, border-color 0.15s;
+      }
+      .critter-btn:hover {
+        background: var(--btn-bg);
+      }
+      .critter-btn.selected {
+        background: var(--btn-selected);
+        border-color: var(--accent);
+      }
+      .critter-btn:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+
+      .action-row {
+        display: flex;
+        gap: 8px;
+      }
+
+      .action-btn {
+        flex: 1;
+        padding: 8px 0;
+        border-radius: 8px;
+        border: none;
+        font: inherit;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+
+      #start-btn {
+        background: var(--start-bg);
+        color: var(--ink);
+      }
+      #start-btn:hover:not(:disabled) {
+        background: var(--start-active);
+      }
+      #start-btn:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+
+      #restart-btn {
+        background: rgba(40, 50, 65, 0.8);
+        color: var(--ink-dim);
+        border: 1px solid var(--panel-border);
+      }
+      #restart-btn:hover:not(:disabled) {
+        background: var(--btn-bg);
+        color: var(--ink);
+      }
+      #restart-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+
+      #json-btn {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 10;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 1px solid var(--panel-border);
+        background: var(--panel-bg);
+        color: var(--accent);
+        font-size: 0.7rem;
+        font-weight: 700;
+        cursor: pointer;
+        backdrop-filter: blur(8px);
+        transition: background 0.15s;
+      }
+      #json-btn:hover:not(:disabled) {
+        background: var(--btn-bg);
+      }
+      #json-btn:disabled {
+        opacity: 0.3;
+        cursor: default;
+      }
+
+      #json-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+      }
+      #json-modal.visible {
+        display: flex;
+      }
+
+      .modal-content {
+        background: #1a2233;
+        border: 1px solid var(--panel-border);
+        border-radius: 12px;
+        padding: 20px;
+        max-width: 520px;
+        width: 90%;
+        max-height: 70vh;
+        overflow: auto;
+      }
+
+      .modal-content pre {
+        margin: 0;
+        color: #a8d8ea;
+        font-size: 0.82rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .modal-close {
+        display: block;
+        margin: 12px auto 0;
+        padding: 6px 20px;
+        border-radius: 6px;
+        border: 1px solid var(--panel-border);
+        background: rgba(40, 50, 65, 0.8);
+        color: var(--ink-dim);
+        cursor: pointer;
+        font: inherit;
+        font-size: 0.82rem;
+      }
+
+      #loading-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.3);
+      }
+      #loading-overlay.visible {
+        display: flex;
+      }
+      .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid rgba(160, 190, 220, 0.2);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      #param-overlay {
+        position: fixed;
+        top: 18px;
+        right: 18px;
+        z-index: 10;
+        background: rgba(30, 40, 52, 0.85);
+        border-radius: 8px;
+        padding: 10px 14px;
+        display: none;
+        backdrop-filter: blur(6px);
+      }
+      #param-overlay.visible {
+        display: block;
+      }
+      .param-row {
+        font-size: 0.78rem;
+        color: #c8d0de;
+        padding: 3px 0;
+        cursor: default;
+      }
+      .param-label {
+        text-decoration: underline dotted rgba(160, 190, 220, 0.4);
+        text-underline-offset: 3px;
+      }
+      .param-row .tooltip {
+        display: none;
+        position: absolute;
+        right: calc(100% + 10px);
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(20, 28, 40, 0.95);
+        border: 1px solid var(--panel-border);
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-size: 0.72rem;
+        color: var(--ink-dim);
+        width: 200px;
+        white-space: normal;
+        line-height: 1.35;
+      }
+      .param-row:hover .tooltip {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="sketch"></div>
+
+    <div id="ui-panel">
+      <div class="prompt-label">How are you feeling today? Tell me in a sentence.</div>
+      <input type="text" id="feeling-input" placeholder="" />
+      <div class="critter-label">Choose a critter:</div>
+      <div class="critter-row">
+        <button class="critter-btn" data-critter="bird" data-emoji="&#x1F426;" title="Bird (boid)">&#x1F426;</button>
+        <button class="critter-btn" data-critter="horse" data-emoji="&#x1F434;" title="Horse (hoid)">&#x1F434;</button>
+        <button class="critter-btn" data-critter="butterfly" data-emoji="&#x1F98B;" title="Butterfly (buttoid)">&#x1F98B;</button>
+        <button class="critter-btn" data-critter="monkey" data-emoji="&#x1F435;" title="Monkey (moid)">&#x1F435;</button>
+        <button class="critter-btn" data-critter="shark" data-emoji="&#x1F988;" title="Shark (soid)">&#x1F988;</button>
+      </div>
+      <div class="action-row">
+        <button class="action-btn" id="start-btn" disabled>Start</button>
+        <button class="action-btn" id="restart-btn" disabled>Restart</button>
+      </div>
+    </div>
+
+    <div id="loading-overlay"><div class="spinner"></div></div>
+
+    <div id="param-overlay">
+      <div class="param-row" style="position:relative;">
+        <span class="param-label">Separation</span>: <span id="param-sep">5</span>
+        <div class="tooltip">How strongly boids steer away from nearby neighbors. Higher values mean more avoidance and spreading out.</div>
+      </div>
+      <div class="param-row" style="position:relative;">
+        <span class="param-label">Alignment</span>: <span id="param-ali">5</span>
+        <div class="tooltip">How strongly boids match the heading of nearby neighbors. Higher values mean the flock moves in tighter unison.</div>
+      </div>
+      <div class="param-row" style="position:relative;">
+        <span class="param-label">Cohesion</span>: <span id="param-coh">5</span>
+        <div class="tooltip">How strongly boids steer toward the center of nearby neighbors. Higher values mean tighter clustering.</div>
+      </div>
+      <div class="param-row" style="position:relative;">
+        <span class="param-label">Perception</span>: <span id="param-per">60</span>
+        <div class="tooltip">How far each boid can sense its neighbors (in pixels). Based on the real-world sensory range of the selected critter.</div>
+      </div>
+    </div>
+
+    <button id="json-btn" disabled>JSON</button>
+
+    <div id="json-modal">
+      <div class="modal-content">
+        <pre id="json-content">{}</pre>
+        <div id="retry-info" style="margin-top:10px; font-size:0.78rem; color:#94a3b8;"></div>
+        <button class="modal-close" id="modal-close-btn">Close</button>
+      </div>
+    </div>
+
+    <script src="index.js"></script>
+  </body>
+</html>
