@@ -22,7 +22,7 @@ Whenever you perform git or GitHub CLI operations on my behalf, include a summar
 | `git fetch upstream` | Downloads new commits from the instructor's repo |
 | `git merge upstream/main` | Merges those commits into your current branch |
 
-Also explain any terminal syntax used, such as:
+Also explain **every** piece of terminal syntax used in the command. Do not omit syntax just because it appeared in a previous response. Always include all of the following that apply:
 
 | Syntax | What It Means |
 |--------|--------------|
