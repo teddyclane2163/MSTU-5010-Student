@@ -24,4 +24,18 @@ Whenever you perform git or GitHub CLI operations on my behalf, include a summar
 | `git fetch upstream` | Downloads new commits from the instructor's repo |
 | `git merge upstream/main` | Merges those commits into your current branch |
 
+Also explain any terminal syntax used, such as:
+
+| Syntax | What It Means |
+|--------|--------------|
+| `&&` | Run the next command only if the previous one succeeded |
+| `-m` | A flag (option) that modifies how a command behaves |
+| `"quoted text"` | Wraps a value that contains spaces so the terminal reads it as one argument |
+
+After the tables, show the full command(s) as they would be typed in the terminal, for example:
+
+```
+git add AGENTS.md && git commit -m "Add git learning mode" && git push origin main
+```
+
 This helps me learn the CLI so I can eventually run these commands myself.
