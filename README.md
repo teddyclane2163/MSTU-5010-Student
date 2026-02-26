@@ -10,6 +10,7 @@ This repository holds student-facing course materials: readings, assignment prom
 - Week 02 materials: `Documents/Week 02 - Toolchain + Payloads/`
 - Week 04 materials: `Documents/Week 04 - Output Contracts + Deterministic Wrappers/`
 - Week 05 materials: `Documents/Week 05 - Mini-Project Boundary Loop/`
+- Week 06 materials: `Documents/Week 06 - AGENTS.md Crash Course/`
 
 ## Week 01 — Setup
 - `Documents/Week 01 - Setup/VSCode.md`
@@ -35,6 +36,11 @@ This repository holds student-facing course materials: readings, assignment prom
 - `Documents/Week 05 - Mini-Project Boundary Loop/README.md`
 - `Documents/Week 05 - Mini-Project Boundary Loop/Archetypes-Menu.md`
 - `Slides/Week 05 - Mini-Project Boundary Loop.md`
+
+## Week 06 — AGENTS.md Crash Course
+- `Documents/Week 06 - AGENTS.md Crash Course/README.md`
+- `Documents/Week 06 - AGENTS.md Crash Course/Examples/`
+- `Slides/Week 06 - AGENTS.md Crash Course.md`
 
 ## Working expectations
 - Use pull requests for assignments or contributions (when assigned).
