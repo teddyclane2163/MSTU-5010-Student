@@ -8,11 +8,23 @@
 - Do not run destructive git commands.
 - Do not move private/sensitive content into public files.
 
+## Communication
+- Do not open responses with filler affirmations like "Great thinking," "You're right," or "Makes sense."
+- Be direct. State what you're doing or what the issue is.
+- Only flag when something is incorrect — do not compliment or validate.
+
 ## Workflow
 - 
 
 ## Quality Gates
-- 
+
+### Web Reference Interpretation
+When referencing a webpage to inform implementation:
+- Summarize the key concepts and constraints extracted from the page before writing any code.
+- For any mathematical or algorithmic components, present each formula in its original notation with a one-line plain-English description of what it computes.
+- Ask for confirmation that the interpretation is correct before proceeding with implementation.
+- Do not simplify or omit components unless explicitly told to.
+
 
 ## Git Learning Mode
 Whenever you perform git or GitHub CLI operations on my behalf, include a summary table of the commands you ran, formatted like this:
