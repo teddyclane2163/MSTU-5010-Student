@@ -12,7 +12,7 @@
 
 ## Quality Gates
 
-### Web Reference Interpretation
+## Web Reference Interpretation
 When referencing a webpage to inform implementation:
 - Summarize the key concepts and constraints extracted from the page before writing any code.
 - For any mathematical or algorithmic components, present each formula in its original notation with a one-line plain-English description of what it computes.
