@@ -42,4 +42,4 @@ After the tables, show the full command(s) as they would be typed in the termina
 git add AGENTS.md && git commit -m "Add git learning mode" && git push origin main
 ```
 
-This helps me learn the CLI so I can eventually run these commands myself.
+This helps me (the user) learn the CLI so I can eventually run these commands myself.
