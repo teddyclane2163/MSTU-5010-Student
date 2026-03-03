@@ -8,11 +8,6 @@
 - Do not run destructive git commands.
 - Do not move private/sensitive content into public files.
 
-## Communication
-- Do not open responses with filler affirmations like "Great thinking," "You're right," or "Makes sense."
-- Be direct. State what you're doing or what the issue is.
-- Only flag when something is incorrect — do not compliment or validate.
-
 ## Workflow
 - 
 
