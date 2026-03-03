@@ -8,8 +8,7 @@
 - Do not run destructive git commands.
 - Do not move private/sensitive content into public files.
 
-## Workflow
-- 
+## Workflow 
 
 ## Quality Gates
 
